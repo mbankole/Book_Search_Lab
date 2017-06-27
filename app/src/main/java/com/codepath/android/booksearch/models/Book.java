@@ -1,5 +1,7 @@
 package com.codepath.android.booksearch.models;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.text.TextUtils;
 
 import org.json.JSONArray;
@@ -8,10 +10,11 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-public class Book {
+public class Book implements Parcelable {
     private String openLibraryId;
     private String author;
     private String title;
+    private String publish_date;
 
     public String getOpenLibraryId() {
         return openLibraryId;
@@ -43,6 +46,8 @@ public class Book {
                 book.openLibraryId = ids.getString(0);
             }
             book.title = jsonObject.has("title_suggest") ? jsonObject.getString("title_suggest") : "";
+            JSONArray publish_dates = jsonObject.getJSONArray("publish_date");
+            book.publish_date = publish_dates.optString(0);
             book.author = getAuthor(jsonObject);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -50,6 +55,10 @@ public class Book {
         }
         // Return new object
         return book;
+    }
+
+    public String getPublish_date() {
+        return publish_date;
     }
 
     // Return comma separated author list when there is more than one author
@@ -87,4 +96,39 @@ public class Book {
         }
         return books;
     }
+
+    public Book() {
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(this.openLibraryId);
+        dest.writeString(this.author);
+        dest.writeString(this.title);
+        dest.writeString(this.publish_date);
+    }
+
+    protected Book(Parcel in) {
+        this.openLibraryId = in.readString();
+        this.author = in.readString();
+        this.title = in.readString();
+        this.publish_date = in.readString();
+    }
+
+    public static final Creator<Book> CREATOR = new Creator<Book>() {
+        @Override
+        public Book createFromParcel(Parcel source) {
+            return new Book(source);
+        }
+
+        @Override
+        public Book[] newArray(int size) {
+            return new Book[size];
+        }
+    };
 }
